@@ -292,7 +292,7 @@ export default function CafeDetailPage({
               src={images[currentImage]}
               alt={`${cafe.name} image ${currentImage + 1}`}
               fill
-              className="object-cover"
+              className="object-contain"
               unoptimized
             />
 
