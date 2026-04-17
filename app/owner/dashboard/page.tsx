@@ -7,7 +7,7 @@ import Image from "next/image"
 import { Coffee, Edit, Eye, Plus, Star, Trash2, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { redirect } from "next/dist/server/api-utils"
+
 
 type Cafe = {
   id: number
@@ -93,15 +93,16 @@ export default function OwnerDashboardPage() {
   }, [])
 
   const handleDelete = async (id: number) => {
-    const { error } = await supabase.from("cafes").delete().eq("id", id)
+  const { error } = await supabase.from("cafes").delete().eq("id", id)
 
-    if (error) {
-      alert(error.message)
-      return
-    }
-
-    setOwnedCafes(ownedCafes.filter((c) => c.id !== id))
+  if (error) {
+    alert(error.message)
+    console.error("Delete cafe error:", error)
+    return
   }
+
+  setOwnedCafes((prev) => prev.filter((c) => c.id !== id))
+}
 
   const totalBoosts = ownedCafes.reduce((acc, cafe) => acc + (cafe.boosts || 0), 0)
   const totalReviews = ownedCafes.reduce((acc, cafe) => acc + (cafe.reviewsCount || 0), 0)
