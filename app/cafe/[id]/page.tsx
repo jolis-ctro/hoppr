@@ -399,7 +399,7 @@ export default function CafeDetailPage({
               <DollarSign className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-xs text-muted-foreground">Price</p>
-                <p className="text-sm font-medium text-foreground">{cafe.priceRange}</p>
+                <p className="text-sm font-medium text-foreground">{cafe.price_range}</p>
               </div>
             </CardContent>
           </Card>
