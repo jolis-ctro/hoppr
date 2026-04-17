@@ -20,7 +20,7 @@ export default function AddCafePage() {
     description: "",
     location: "",
     hours: "",
-    priceRange: "$$",
+    price_range: "$$",
     wifi: true,
     outlets: true,
     tags: "",
@@ -123,7 +123,7 @@ useEffect(() => {
         description: formData.description,
         location: formData.location,
         hours: formData.hours,
-        price_range: formData.priceRange,
+        price_range: formData.price_range,
         wifi: formData.wifi,
         outlets: formData.outlets,
         tags: tagsArray,
@@ -246,11 +246,11 @@ useEffect(() => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="priceRange">Price Range</Label>
+                    <Label htmlFor="price_range">Price Range</Label>
                     <select
-                      id="priceRange"
-                      value={formData.priceRange}
-                      onChange={(e) => setFormData({ ...formData, priceRange: e.target.value })}
+                      id="price_range"
+                      value={formData.price_range}
+                      onChange={(e) => setFormData({ ...formData, price_range: e.target.value })}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       <option value="$">$ - Budget friendly</option>
