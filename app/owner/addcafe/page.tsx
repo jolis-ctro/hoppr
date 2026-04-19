@@ -32,39 +32,40 @@ export default function AddCafePage() {
 useEffect(() => {
   let mounted = true
 
-  const checkUser = async () => {
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession()
+const checkUser = async () => {
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession()
 
-    if (sessionError) {
-      console.error(sessionError)
-      return
-    }
-
-    const user = session?.user
-
-    if (!user) {
-      if (mounted) router.push("/login")
-      return
-    }
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single()
-
-    if (error) {
-      console.error(error)
-      return
-    }
-
-    if (mounted && data?.role !== "owner") {
-      router.push("/explore")
-    }
+  if (sessionError) {
+    console.error(sessionError)
+    return
   }
+
+  const user = session?.user
+
+  if (!user) {
+    if (mounted) router.push("/login")
+    return
+  }
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single()
+
+  if (error) {
+    console.error(error)
+    if (mounted) router.push("/login")
+    return
+  }
+
+  if (mounted && data?.role !== "owner") {
+    router.push("/explore")
+  }
+}
 
   checkUser()
 
@@ -73,7 +74,7 @@ useEffect(() => {
   }
 }, [router])
 
- const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault()
 
   const {
@@ -94,17 +95,11 @@ useEffect(() => {
     return
   }
 
-  console.log("current user id:", user.id)
-  console.log("current user email:", user.email)
-
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("id, role")
     .eq("id", user.id)
     .single()
-
-  console.log("matched profile:", profile)
-  console.log("profile error:", profileError)
 
   if (profileError || !profile) {
     alert("No matching owner profile found for this account.")
@@ -124,7 +119,7 @@ useEffect(() => {
   setUploading(true)
 
   const fileExt = imageFile.name.split(".").pop()
-  const fileName = `${user.id}-${Date.now()}.${fileExt}`
+  const fileName = `${profile.id}-${Date.now()}.${fileExt}`
   const filePath = `cafes/${fileName}`
 
   const { error: uploadError } = await supabase.storage
@@ -166,7 +161,6 @@ useEffect(() => {
   setUploading(false)
 
   if (error) {
-    console.error("Cafe insert error:", error)
     alert(error.message)
     return
   }
