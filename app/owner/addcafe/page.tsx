@@ -162,7 +162,7 @@ export default function AddCafePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <p>Loading...</p>
       </div>
     )
