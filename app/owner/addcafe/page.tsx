@@ -35,13 +35,7 @@ export default function AddCafePage() {
     const checkUser = async () => {
       const {
         data: { session },
-        error: sessionError,
       } = await supabase.auth.getSession()
-
-      if (sessionError) {
-        console.error(sessionError)
-        return
-      }
 
       const user = session?.user
 
@@ -78,32 +72,10 @@ export default function AddCafePage() {
 
     const {
       data: { user },
-      error: userError,
     } = await supabase.auth.getUser()
 
-    if (userError || !user) {
+    if (!user) {
       alert("Login first")
-      return
-    }
-
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("id, role")
-      .eq("id", user.id)
-      .maybeSingle()
-
-    if (profileError) {
-      alert(profileError.message)
-      return
-    }
-
-    if (!profile) {
-      alert("Owner profile not found in profiles table")
-      return
-    }
-
-    if (profile.role !== "owner") {
-      alert("Only owner accounts can add cafes")
       return
     }
 
@@ -150,7 +122,7 @@ export default function AddCafePage() {
         outlets: formData.outlets,
         tags: tagsArray,
         image: imageUrl,
-        owner_id: profile.id,
+        owner_id: user.id,
       },
     ])
 
@@ -190,7 +162,9 @@ export default function AddCafePage() {
         <Card>
           <CardHeader>
             <CardTitle>Add New Cafe</CardTitle>
-            <CardDescription>Fill in the details to list your cafe on hoppr</CardDescription>
+            <CardDescription>
+              Fill in the details to list your cafe on hoppr
+            </CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -229,7 +203,9 @@ export default function AddCafePage() {
                     id="name"
                     placeholder="Your cafe name"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -240,7 +216,9 @@ export default function AddCafePage() {
                     id="description"
                     placeholder="Tell people about your cafe..."
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -251,7 +229,9 @@ export default function AddCafePage() {
                     id="location"
                     placeholder="Neighborhood or address"
                     value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -263,7 +243,9 @@ export default function AddCafePage() {
                       id="hours"
                       placeholder="e.g. 7am - 9pm"
                       value={formData.hours}
-                      onChange={(e) => setFormData({ ...formData, hours: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, hours: e.target.value })
+                      }
                     />
                   </div>
 
@@ -272,8 +254,10 @@ export default function AddCafePage() {
                     <select
                       id="price_range"
                       value={formData.price_range}
-                      onChange={(e) => setFormData({ ...formData, price_range: e.target.value })}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                      onChange={(e) =>
+                        setFormData({ ...formData, price_range: e.target.value })
+                      }
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     >
                       <option value="$">$ - Budget friendly</option>
                       <option value="$$">$$ - Moderate</option>
@@ -283,56 +267,21 @@ export default function AddCafePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="tags">Tags (comma separated)</Label>
+                  <Label htmlFor="tags">Tags</Label>
                   <Input
                     id="tags"
-                    placeholder="e.g. matcha, aesthetic, wifi"
+                    placeholder="matcha, aesthetic, wifi"
                     value={formData.tags}
-                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, tags: e.target.value })
+                    }
                   />
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <Label>Amenities</Label>
-                <div className="flex flex-wrap gap-6">
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="wifi"
-                      checked={formData.wifi}
-                      onCheckedChange={(checked) =>
-                        setFormData({ ...formData, wifi: checked as boolean })
-                      }
-                    />
-                    <Label htmlFor="wifi" className="font-normal">
-                      WiFi available
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="outlets"
-                      checked={formData.outlets}
-                      onCheckedChange={(checked) =>
-                        setFormData({ ...formData, outlets: checked as boolean })
-                      }
-                    />
-                    <Label htmlFor="outlets" className="font-normal">
-                      Power outlets
-                    </Label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button type="button" variant="outline" asChild className="flex-1">
-                  <Link href="/owner/dashboard">Cancel</Link>
-                </Button>
-
-                <Button type="submit" className="flex-1" disabled={uploading}>
-                  {uploading ? "Uploading..." : "Add Your Cafe"}
-                </Button>
-              </div>
+              <Button type="submit" className="w-full">
+                {uploading ? "Uploading..." : "Add Cafe"}
+              </Button>
             </form>
           </CardContent>
         </Card>

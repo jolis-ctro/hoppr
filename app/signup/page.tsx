@@ -1,6 +1,6 @@
 "use client"
 
-import { supabase } from "@/lib/supabase"
+import { supabase } from '@/lib/supabase'
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -35,6 +35,9 @@ export default function SignupPage() {
       },
     })
 
+    console.log("signup data:", data)
+    console.log("signup error:", error)
+
     if (error) {
       alert(error.message)
       return
@@ -45,25 +48,10 @@ export default function SignupPage() {
       return
     }
 
-    // 🔥 THIS WAS MISSING — THIS FIXES EVERYTHING
-    const { error: profileError } = await supabase.from("profiles").insert([
-      {
-        id: data.user.id,
-        full_name: formData.name,
-        role: userType,
-      },
-    ])
-
-    if (profileError) {
-      alert(profileError.message)
-      return
-    }
-
-    alert("Signup successful! Check your email.")
-    router.push("/login")
+    alert("Signup successful! Check your email to confirm your account.")
   }
 
   return (
-    <div>...</div> // keep your UI same
+    <div>...</div> // your UI unchanged
   )
 }

@@ -61,6 +61,6 @@ export default function LoginPage() {
   }
 
   return (
-    <div>...</div> // keep your UI same
+    <div>...</div> // your UI unchanged
   )
 }
