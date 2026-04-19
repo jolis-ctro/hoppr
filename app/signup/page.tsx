@@ -1,5 +1,6 @@
 "use client"
-import { supabase } from '@/lib/supabase'
+
+import { supabase } from "@/lib/supabase"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -11,7 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function SignupPage() {
   const router = useRouter()
+
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [userType, setUserType] = useState<"goer" | "owner">("goer")
   const [formData, setFormData] = useState({
     name: "",
@@ -19,36 +22,68 @@ export default function SignupPage() {
     password: "",
   })
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setLoading(true)
 
-  const { data, error } = await supabase.auth.signUp({
-    email: formData.email,
-    password: formData.password,
-    options: {
-      emailRedirectTo: "https://hoppr-jade.vercel.app/auth/callback",
-      data: {
-        full_name: formData.name,
-        role: userType,
-      },
-    },
-  })
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email.trim(),
+        password: formData.password,
+      })
 
-  console.log("signup data:", data)
-  console.log("signup error:", error)
+      if (error) {
+        alert(error.message)
+        setLoading(false)
+        return
+      }
 
-  if (error) {
-    alert(error.message)
-    return
+      const user = data.user
+
+      if (!user) {
+        alert("Could not create account")
+        setLoading(false)
+        return
+      }
+
+      const { error: profileError } = await supabase.from("profiles").upsert(
+        [
+          {
+            id: user.id,
+            full_name: formData.name.trim(),
+            role: userType,
+          },
+        ],
+        { onConflict: "id" }
+      )
+
+      if (profileError) {
+        alert(profileError.message)
+        setLoading(false)
+        return
+      }
+
+      if (data.session) {
+        alert("Signup successful!")
+
+        if (userType === "owner") {
+          router.push("/owner/dashboard")
+        } else {
+          router.push("/explore")
+        }
+
+        return
+      }
+
+      alert("Account created. Please sign in.")
+      router.push("/login")
+    } catch (err) {
+      console.error(err)
+      alert("Something went wrong")
+    }
+
+    setLoading(false)
   }
-
-  if (!data.user) {
-    alert("No user returned")
-    return
-  }
-
-  alert("Signup successful! Check your email to confirm your account.")
-}
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
@@ -63,8 +98,8 @@ const handleSubmit = async (e: React.FormEvent) => {
             <CardTitle className="text-2xl">Create an account</CardTitle>
             <CardDescription>Join the cafe hopping community</CardDescription>
           </CardHeader>
+
           <CardContent>
-            {/* User Type Toggle */}
             <div className="mb-6 flex rounded-lg bg-muted p-1">
               <button
                 type="button"
@@ -77,6 +112,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               >
                 Cafe Goer
               </button>
+
               <button
                 type="button"
                 onClick={() => setUserType("owner")}
@@ -92,7 +128,9 @@ const handleSubmit = async (e: React.FormEvent) => {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">{userType === "owner" ? "Business name" : "Your name"}</Label>
+                <Label htmlFor="name">
+                  {userType === "owner" ? "Business name" : "Your name"}
+                </Label>
                 <Input
                   id="name"
                   type="text"
@@ -102,6 +140,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   required
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -113,6 +152,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   required
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -133,8 +173,13 @@ const handleSubmit = async (e: React.FormEvent) => {
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full">
-                {userType === "owner" ? "Create Owner Account" : "Sign up"}
+
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading
+                  ? "Creating account..."
+                  : userType === "owner"
+                  ? "Create Owner Account"
+                  : "Sign up"}
               </Button>
             </form>
 
