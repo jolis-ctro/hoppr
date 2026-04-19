@@ -15,6 +15,9 @@ import { supabase } from "@/lib/supabase"
 export default function AddCafePage() {
   const router = useRouter()
 
+  const [loading, setLoading] = useState(true)
+  const [ownerId, setOwnerId] = useState<string | null>(null)
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -29,145 +32,141 @@ export default function AddCafePage() {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
 
-useEffect(() => {
-  let mounted = true
+  useEffect(() => {
+    let mounted = true
 
-const checkUser = async () => {
-  const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.getSession()
+    const checkUser = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
 
-  if (sessionError) {
-    console.error(sessionError)
-    return
-  }
+      if (userError) {
+        console.error("getUser error:", userError)
+        if (mounted) {
+          setLoading(false)
+          router.push("/login")
+        }
+        return
+      }
 
-  const user = session?.user
+      if (!user) {
+        if (mounted) {
+          setLoading(false)
+          router.push("/login")
+        }
+        return
+      }
 
-  if (!user) {
-    if (mounted) router.push("/login")
-    return
-  }
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, role")
+        .eq("id", user.id)
+        .single()
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single()
+      if (profileError || !profile) {
+        console.error("profile error:", profileError)
+        if (mounted) {
+          setLoading(false)
+          router.push("/login")
+        }
+        return
+      }
 
-  if (error) {
-    console.error(error)
-    if (mounted) router.push("/login")
-    return
-  }
+      if (profile.role !== "owner") {
+        if (mounted) {
+          setLoading(false)
+          router.push("/explore")
+        }
+        return
+      }
 
-  if (mounted && data?.role !== "owner") {
-    router.push("/explore")
-  }
-}
+      if (mounted) {
+        setOwnerId(profile.id)
+        setLoading(false)
+      }
+    }
 
-  checkUser()
+    checkUser()
 
-  return () => {
-    mounted = false
-  }
-}, [router])
+    return () => {
+      mounted = false
+    }
+  }, [router])
 
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
 
-  const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.getSession()
+    if (!ownerId) {
+      alert("You must be logged in as an owner.")
+      return
+    }
 
-  if (sessionError) {
-    alert(sessionError.message)
-    return
-  }
+    if (!imageFile) {
+      alert("Please upload a cafe image")
+      return
+    }
 
-  const user = session?.user
+    setUploading(true)
 
-  if (!user) {
-    alert("Login first")
-    router.push("/login")
-    return
-  }
+    const fileExt = imageFile.name.split(".").pop()
+    const fileName = `${ownerId}-${Date.now()}.${fileExt}`
+    const filePath = `cafes/${fileName}`
 
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, role")
-    .eq("id", user.id)
-    .single()
+    const { error: uploadError } = await supabase.storage
+      .from("cafe-images")
+      .upload(filePath, imageFile)
 
-  if (profileError || !profile) {
-    alert("No matching owner profile found for this account.")
-    return
-  }
+    if (uploadError) {
+      setUploading(false)
+      alert(uploadError.message)
+      return
+    }
 
-  if (profile.role !== "owner") {
-    alert("Only owners can add cafes.")
-    return
-  }
+    const { data: publicUrlData } = supabase.storage
+      .from("cafe-images")
+      .getPublicUrl(filePath)
 
-  if (!imageFile) {
-    alert("Please upload a cafe image")
-    return
-  }
+    const imageUrl = publicUrlData.publicUrl
 
-  setUploading(true)
+    const tagsArray = formData.tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean)
 
-  const fileExt = imageFile.name.split(".").pop()
-  const fileName = `${profile.id}-${Date.now()}.${fileExt}`
-  const filePath = `cafes/${fileName}`
+    const { error } = await supabase.from("cafes").insert([
+      {
+        name: formData.name,
+        description: formData.description,
+        location: formData.location,
+        hours: formData.hours,
+        price_range: formData.price_range,
+        wifi: formData.wifi,
+        outlets: formData.outlets,
+        tags: tagsArray,
+        image: imageUrl,
+        owner_id: ownerId,
+      },
+    ])
 
-  const { error: uploadError } = await supabase.storage
-    .from("cafe-images")
-    .upload(filePath, imageFile)
-
-  if (uploadError) {
     setUploading(false)
-    alert(uploadError.message)
-    return
+
+    if (error) {
+      alert(error.message)
+      return
+    }
+
+    alert("Cafe added ✅")
+    router.push("/owner/dashboard")
   }
 
-  const { data: publicUrlData } = supabase.storage
-    .from("cafe-images")
-    .getPublicUrl(filePath)
-
-  const imageUrl = publicUrlData.publicUrl
-
-  const tagsArray = formData.tags
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean)
-
-  const { error } = await supabase.from("cafes").insert([
-    {
-      name: formData.name,
-      description: formData.description,
-      location: formData.location,
-      hours: formData.hours,
-      price_range: formData.price_range,
-      wifi: formData.wifi,
-      outlets: formData.outlets,
-      tags: tagsArray,
-      image: imageUrl,
-      owner_id: profile.id,
-    },
-  ])
-
-  setUploading(false)
-
-  if (error) {
-    alert(error.message)
-    return
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    )
   }
-
-  alert("Cafe added ✅")
-  router.push("/owner/dashboard")
-}
 
   return (
     <div className="min-h-screen bg-background">
