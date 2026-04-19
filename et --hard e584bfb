@@ -1,0 +1,18 @@
+[33m7d035c6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m update
+[33md402bc2[m reset to original working version
+[33m0a6b322[m fix: owner role detection + cafe insert working
+[33m736e2b7[m restore original add cafe page
+[33m5379904[m restore original add cafe page
+[33me584bfb[m revert add cafe page to original
+[33m96ac788[m fix add cafe owner check
+[33m353cceb[m fix owner add cafe auth check
+[33m50b4e9e[m fix cafe owner_id + auth check
+[33mf27f5e7[m fixing cafe adding
+[33m6a223bf[m remove email confirm flow
+[33mc161847[m fixing call back
+[33m4a1946f[m fix image sizing
+[33maeebd51[m fix owner edit page
+[33mac3a93f[m fix edit bug
+[33m725f86d[m fix price display
+[33m539e7ba[m remove pnpm lock
+[33mdf3bf96[m first deploy
