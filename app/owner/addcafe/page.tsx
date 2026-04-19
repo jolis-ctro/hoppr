@@ -54,14 +54,36 @@ export default function AddCafePage() {
         .from("profiles")
         .select("role")
         .eq("id", user.id)
-        .single()
+        .maybeSingle()
 
       if (error) {
         console.error(error)
         return
       }
 
-      if (mounted && data?.role !== "owner") {
+      if (!data) {
+        const { error: createProfileError } = await supabase.from("profiles").upsert([
+          {
+            id: user.id,
+            email: user.email,
+            full_name: user.user_metadata?.full_name || "",
+            role: user.user_metadata?.role || "goer",
+          },
+        ])
+
+        if (createProfileError) {
+          console.error(createProfileError)
+          return
+        }
+
+        const role = user.user_metadata?.role || "goer"
+        if (mounted && role !== "owner") {
+          router.push("/explore")
+        }
+        return
+      }
+
+      if (mounted && data.role !== "owner") {
         router.push("/explore")
       }
     }
@@ -82,6 +104,38 @@ export default function AddCafePage() {
 
     if (!user) {
       alert("Login first")
+      return
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, role")
+      .eq("id", user.id)
+      .maybeSingle()
+
+    if (profileError) {
+      alert(profileError.message)
+      return
+    }
+
+    if (!profile) {
+      const { error: createProfileError } = await supabase.from("profiles").upsert([
+        {
+          id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || "",
+          role: user.user_metadata?.role || "owner",
+        },
+      ])
+
+      if (createProfileError) {
+        alert(createProfileError.message)
+        return
+      }
+    }
+
+    if ((profile?.role ?? user.user_metadata?.role) !== "owner") {
+      alert("Only owner accounts can add cafes")
       return
     }
 

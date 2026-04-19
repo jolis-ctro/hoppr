@@ -1,5 +1,6 @@
 "use client"
-import { supabase } from '@/lib/supabase'
+
+import { supabase } from "@/lib/supabase"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -18,37 +19,54 @@ export default function SignupPage() {
     email: "",
     password: "",
   })
+  const [loading, setLoading] = useState(false)
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
 
-  const { data, error } = await supabase.auth.signUp({
-    email: formData.email,
-    password: formData.password,
-    options: {
-      emailRedirectTo: "https://hoppr-jade.vercel.app/auth/callback",
-      data: {
+    const { data, error } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+        emailRedirectTo: "https://hoppr-jade.vercel.app/auth/callback",
+        data: {
+          full_name: formData.name,
+          role: userType,
+        },
+      },
+    })
+
+    if (error) {
+      setLoading(false)
+      alert(error.message)
+      return
+    }
+
+    if (!data.user) {
+      setLoading(false)
+      alert("No user returned")
+      return
+    }
+
+    const { error: profileError } = await supabase.from("profiles").upsert([
+      {
+        id: data.user.id,
         full_name: formData.name,
         role: userType,
       },
-    },
-  })
+    ])
 
-  console.log("signup data:", data)
-  console.log("signup error:", error)
+    if (profileError) {
+      setLoading(false)
+      alert(profileError.message)
+      return
+    }
 
-  if (error) {
-    alert(error.message)
-    return
+    setLoading(false)
+    alert("Signup successful! Check your email to confirm your account.")
+    router.push("/login")
   }
-
-  if (!data.user) {
-    alert("No user returned")
-    return
-  }
-
-  alert("Signup successful! Check your email to confirm your account.")
-}
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
@@ -63,8 +81,8 @@ const handleSubmit = async (e: React.FormEvent) => {
             <CardTitle className="text-2xl">Create an account</CardTitle>
             <CardDescription>Join the cafe hopping community</CardDescription>
           </CardHeader>
+
           <CardContent>
-            {/* User Type Toggle */}
             <div className="mb-6 flex rounded-lg bg-muted p-1">
               <button
                 type="button"
@@ -77,6 +95,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               >
                 Cafe Goer
               </button>
+
               <button
                 type="button"
                 onClick={() => setUserType("owner")}
@@ -92,7 +111,9 @@ const handleSubmit = async (e: React.FormEvent) => {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">{userType === "owner" ? "Business name" : "Your name"}</Label>
+                <Label htmlFor="name">
+                  {userType === "owner" ? "Business name" : "Your name"}
+                </Label>
                 <Input
                   id="name"
                   type="text"
@@ -102,6 +123,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   required
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -113,6 +135,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   required
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -129,12 +152,21 @@ const handleSubmit = async (e: React.FormEvent) => {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full">
-                {userType === "owner" ? "Create Owner Account" : "Sign up"}
+
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading
+                  ? "Creating account..."
+                  : userType === "owner"
+                  ? "Create Owner Account"
+                  : "Sign up"}
               </Button>
             </form>
 
