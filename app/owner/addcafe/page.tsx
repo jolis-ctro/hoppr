@@ -34,12 +34,35 @@ export default function AddCafePage() {
 
     const checkUser = async () => {
       const {
-        data: { user },
-      } = await supabase.auth.getUser()
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession()
+
+      if (sessionError) {
+        console.error(sessionError)
+        return
+      }
+
+      const user = session?.user
 
       if (!user) {
         if (mounted) router.push("/login")
         return
+      }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+
+      if (error) {
+        console.error(error)
+        return
+      }
+
+      if (mounted && data?.role !== "owner") {
+        router.push("/explore")
       }
     }
 
@@ -177,7 +200,117 @@ export default function AddCafePage() {
                 />
               </div>
 
-              {/* rest of form stays same */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Cafe Name *</Label>
+                  <Input
+                    id="name"
+                    placeholder="Your cafe name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description *</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Tell people about your cafe..."
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location *</Label>
+                  <Input
+                    id="location"
+                    placeholder="Neighborhood or address"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="hours">Operating Hours</Label>
+                    <Input
+                      id="hours"
+                      placeholder="e.g. 7am - 9pm"
+                      value={formData.hours}
+                      onChange={(e) => setFormData({ ...formData, hours: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="price_range">Price Range</Label>
+                    <select
+                      id="price_range"
+                      value={formData.price_range}
+                      onChange={(e) => setFormData({ ...formData, price_range: e.target.value })}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="$">$ - Budget friendly</option>
+                      <option value="$$">$$ - Moderate</option>
+                      <option value="$$$">$$$ - Premium</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="tags">Tags (comma separated)</Label>
+                  <Input
+                    id="tags"
+                    placeholder="e.g. matcha, aesthetic, wifi"
+                    value={formData.tags}
+                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Amenities</Label>
+                <div className="flex flex-wrap gap-6">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="wifi"
+                      checked={formData.wifi}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, wifi: checked as boolean })
+                      }
+                    />
+                    <Label htmlFor="wifi" className="font-normal">
+                      WiFi available
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="outlets"
+                      checked={formData.outlets}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, outlets: checked as boolean })
+                      }
+                    />
+                    <Label htmlFor="outlets" className="font-normal">
+                      Power outlets
+                    </Label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button type="button" variant="outline" asChild className="flex-1">
+                  <Link href="/owner/dashboard">Cancel</Link>
+                </Button>
+
+                <Button type="submit" className="flex-1" disabled={uploading}>
+                  {uploading ? "Uploading..." : "Add Your Cafe"}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
