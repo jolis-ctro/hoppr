@@ -25,6 +25,13 @@ const handleSubmit = async (e: React.FormEvent) => {
   const { data, error } = await supabase.auth.signUp({
     email: formData.email,
     password: formData.password,
+    options: {
+      emailRedirectTo: "https://hoppr-jade.vercel.app/auth/callback",
+      data: {
+        full_name: formData.name,
+        role: userType,
+      },
+    },
   })
 
   console.log("signup data:", data)
@@ -40,20 +47,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     return
   }
 
-  const { error: profileError } = await supabase.from("profiles").upsert([
-    {
-      id: data.user.id,
-      full_name: formData.name,
-      role: userType,
-    },
-  ])
-
-  if (profileError) {
-    alert(profileError.message)
-    return
-  }
-
-  router.push("/explore")
+  alert("Signup successful! Check your email to confirm your account.")
 }
 
   return (
