@@ -73,75 +73,107 @@ useEffect(() => {
   }
 }, [router])
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault()
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession()
 
-    if (!user) {
-      alert("Login first")
-      return
-    }
-
-    if (!imageFile) {
-      alert("Please upload a cafe image")
-      return
-    }
-
-    setUploading(true)
-
-    const fileExt = imageFile.name.split(".").pop()
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`
-    const filePath = `cafes/${fileName}`
-
-    const { error: uploadError } = await supabase.storage
-      .from("cafe-images")
-      .upload(filePath, imageFile)
-
-    if (uploadError) {
-      setUploading(false)
-      alert(uploadError.message)
-      return
-    }
-
-    const { data: publicUrlData } = supabase.storage
-      .from("cafe-images")
-      .getPublicUrl(filePath)
-
-    const imageUrl = publicUrlData.publicUrl
-
-    const tagsArray = formData.tags
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean)
-
-    const { error } = await supabase.from("cafes").insert([
-      {
-        name: formData.name,
-        description: formData.description,
-        location: formData.location,
-        hours: formData.hours,
-        price_range: formData.price_range,
-        wifi: formData.wifi,
-        outlets: formData.outlets,
-        tags: tagsArray,
-        image: imageUrl,
-        owner_id: user.id,
-      },
-    ])
-
-    setUploading(false)
-
-    if (error) {
-      alert(error.message)
-      return
-    }
-
-    alert("Cafe added ✅")
-    router.push("/owner/dashboard")
+  if (sessionError) {
+    alert(sessionError.message)
+    return
   }
+
+  const user = session?.user
+
+  if (!user) {
+    alert("Login first")
+    router.push("/login")
+    return
+  }
+
+  console.log("current user id:", user.id)
+  console.log("current user email:", user.email)
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", user.id)
+    .single()
+
+  console.log("matched profile:", profile)
+  console.log("profile error:", profileError)
+
+  if (profileError || !profile) {
+    alert("No matching owner profile found for this account.")
+    return
+  }
+
+  if (profile.role !== "owner") {
+    alert("Only owners can add cafes.")
+    return
+  }
+
+  if (!imageFile) {
+    alert("Please upload a cafe image")
+    return
+  }
+
+  setUploading(true)
+
+  const fileExt = imageFile.name.split(".").pop()
+  const fileName = `${user.id}-${Date.now()}.${fileExt}`
+  const filePath = `cafes/${fileName}`
+
+  const { error: uploadError } = await supabase.storage
+    .from("cafe-images")
+    .upload(filePath, imageFile)
+
+  if (uploadError) {
+    setUploading(false)
+    alert(uploadError.message)
+    return
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from("cafe-images")
+    .getPublicUrl(filePath)
+
+  const imageUrl = publicUrlData.publicUrl
+
+  const tagsArray = formData.tags
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+
+  const { error } = await supabase.from("cafes").insert([
+    {
+      name: formData.name,
+      description: formData.description,
+      location: formData.location,
+      hours: formData.hours,
+      price_range: formData.price_range,
+      wifi: formData.wifi,
+      outlets: formData.outlets,
+      tags: tagsArray,
+      image: imageUrl,
+      owner_id: profile.id,
+    },
+  ])
+
+  setUploading(false)
+
+  if (error) {
+    console.error("Cafe insert error:", error)
+    alert(error.message)
+    return
+  }
+
+  alert("Cafe added ✅")
+  router.push("/owner/dashboard")
+}
 
   return (
     <div className="min-h-screen bg-background">
