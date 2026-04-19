@@ -61,29 +61,7 @@ export default function AddCafePage() {
         return
       }
 
-      if (!data) {
-        const { error: createProfileError } = await supabase.from("profiles").upsert([
-          {
-            id: user.id,
-            email: user.email,
-            full_name: user.user_metadata?.full_name || "",
-            role: user.user_metadata?.role || "goer",
-          },
-        ])
-
-        if (createProfileError) {
-          console.error(createProfileError)
-          return
-        }
-
-        const role = user.user_metadata?.role || "goer"
-        if (mounted && role !== "owner") {
-          router.push("/explore")
-        }
-        return
-      }
-
-      if (mounted && data.role !== "owner") {
+      if (mounted && data?.role !== "owner") {
         router.push("/explore")
       }
     }
@@ -100,9 +78,10 @@ export default function AddCafePage() {
 
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser()
 
-    if (!user) {
+    if (userError || !user) {
       alert("Login first")
       return
     }
@@ -119,22 +98,11 @@ export default function AddCafePage() {
     }
 
     if (!profile) {
-      const { error: createProfileError } = await supabase.from("profiles").upsert([
-        {
-          id: user.id,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || "",
-          role: user.user_metadata?.role || "owner",
-        },
-      ])
-
-      if (createProfileError) {
-        alert(createProfileError.message)
-        return
-      }
+      alert("Owner profile not found in profiles table")
+      return
     }
 
-    if ((profile?.role ?? user.user_metadata?.role) !== "owner") {
+    if (profile.role !== "owner") {
       alert("Only owner accounts can add cafes")
       return
     }
@@ -182,7 +150,7 @@ export default function AddCafePage() {
         outlets: formData.outlets,
         tags: tagsArray,
         image: imageUrl,
-        owner_id: user.id,
+        owner_id: profile.id,
       },
     ])
 
