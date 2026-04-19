@@ -32,39 +32,31 @@ export default function AddCafePage() {
   useEffect(() => {
     let mounted = true
 
-    const checkUser = async () => {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession()
+   const checkUser = async () => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-      if (sessionError) {
-        console.error(sessionError)
-        return
-      }
+  console.log("AUTH USER ID:", user?.id)
 
-      const user = session?.user
+  if (!user) {
+    router.push("/login")
+    return
+  }
 
-      if (!user) {
-        if (mounted) router.push("/login")
-        return
-      }
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single()
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single()
+  console.log("PROFILE ROW:", data)
+  console.log("PROFILE ERROR:", error)
 
-      if (error) {
-        console.error(error)
-        return
-      }
-
-      if (mounted && data?.role !== "owner") {
-        router.push("/explore")
-      }
-    }
+  if (mounted && data?.role !== "owner") {
+    router.push("/explore")
+  }
+}
 
     checkUser()
 
