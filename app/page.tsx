@@ -43,37 +43,67 @@ useEffect(() => {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden px-4 py-20 md:py-32">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_20%,rgba(120,180,120,0.1),transparent_50%)]" />
-        <div className="mx-auto max-w-4xl text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary">
-            <Sparkles className="h-4 w-4" />
-            <span>Discover your next favorite spot</span>
-          </div>
-          <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-6xl text-balance">
-            Cafe hopping,{" "}
-            <span className="text-primary">reimagined</span>
-          </h1>
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground text-pretty">
-            Find the coziest cafes, leave reviews, boost your favorites, or let fate decide with our random picker.
-          </p>
-          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button size="lg" asChild>
-              <Link href="/explore" className="gap-2">
-                Explore Cafes
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/random" className="gap-2">
-                <Sparkles className="h-4 w-4" />
-                Surprise Me
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      {/* Hero Section */}
+<section className="relative isolate overflow-hidden px-4 pb-24 pt-20 md:pb-32 md:pt-32">
+  {/* animated gradient blobs */}
+  <div className="absolute inset-0 -z-20 overflow-hidden">
+    <div className="absolute left-[-10%] top-[-10%] h-[500px] w-[500px] animate-pulse rounded-full bg-primary/10 blur-3xl" />
 
+    <div className="absolute bottom-[-20%] right-[-10%] h-[450px] w-[450px] animate-pulse rounded-full bg-emerald-300/10 blur-3xl" />
+
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.08),transparent_35%)]" />
+  </div>
+
+  {/* grid background */}
+  <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
+
+  <div className="mx-auto max-w-6xl">
+    <div className="mx-auto max-w-4xl text-center">
+      <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-5 py-2 text-sm font-medium text-primary backdrop-blur">
+        <Sparkles className="h-4 w-4" />
+        Discover your next favorite spot
+      </div>
+
+      <h1 className="mb-6 text-5xl font-black leading-[0.95] tracking-tight text-foreground md:text-7xl">
+        Cafe hopping,
+        <br />
+        <span className="bg-gradient-to-r from-primary via-green-500 to-emerald-400 bg-clip-text text-transparent">
+          reimagined
+        </span>
+      </h1>
+
+      <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+        Discover aesthetic cafes, hidden study spots, and trending places around Melbourne —
+        all powered by community reviews and boosts.
+      </p>
+
+      <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <Button
+          size="lg"
+          asChild
+          className="h-14 rounded-2xl px-8 text-base shadow-lg shadow-primary/20"
+        >
+          <Link href="/explore" className="gap-2">
+            Explore Cafes
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
+
+        <Button
+          size="lg"
+          variant="outline"
+          asChild
+          className="h-14 rounded-2xl border-border/60 bg-background/70 px-8 text-base backdrop-blur"
+        >
+          <Link href="/random" className="gap-2">
+            <Sparkles className="h-4 w-4" />
+            Surprise Me
+          </Link>
+        </Button>
+      </div>
+    </div>
+  </div>
+</section>
       {/* Stats */}
       <section className="border-y border-border bg-muted/30 px-4 py-12">
         <div className="mx-auto grid max-w-4xl grid-cols-3 gap-8">
