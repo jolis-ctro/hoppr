@@ -31,7 +31,7 @@ export function CafeCard({ cafe }: { cafe: any }) {
   return (
     <Link href={`/cafe/${cafe.id}`}>
       <Card className="overflow-hidden transition hover:shadow-lg">
-        <div className="relative aspect-[4/3] overflow-hidden">
+          <div className="relative aspect-[16/10] w-full overflow-hidden">
           <Image
             src={images[currentIndex]}
             alt={cafe.name}

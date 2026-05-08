@@ -45,10 +45,7 @@ export default function CafeDetailPage({
 
   const normaliseImages = (value: any): string[] => {
     if (!value) return []
-
-    if (Array.isArray(value)) {
-      return value.filter(Boolean)
-    }
+    if (Array.isArray(value)) return value.filter(Boolean)
 
     if (typeof value === "string") {
       const trimmed = value.trim()
@@ -67,14 +64,11 @@ export default function CafeDetailPage({
   }
 
   const fetchCafe = async () => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("cafes")
       .select("*")
       .eq("id", Number(id))
       .single()
-
-    console.log("cafe data:", data)
-    console.log("cafe error:", error)
 
     if (data) {
       setCafe(data)
@@ -86,14 +80,11 @@ export default function CafeDetailPage({
   }
 
   const fetchReviews = async () => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("reviews")
       .select("*, profiles(full_name)")
       .eq("cafe_id", Number(id))
       .order("id", { ascending: false })
-
-    console.log("reviews data:", data)
-    console.log("reviews error:", error)
 
     if (data) {
       const cleanedReviews = data.map((review) => ({
@@ -137,20 +128,13 @@ export default function CafeDetailPage({
         .from("review-images")
         .upload(filePath, file)
 
-      if (uploadError) {
-        console.log("review image upload error:", uploadError)
-        continue
-      }
+      if (uploadError) continue
 
       const { data } = supabase.storage
         .from("review-images")
         .getPublicUrl(filePath)
 
-      console.log("uploaded public url:", data?.publicUrl)
-
-      if (data?.publicUrl) {
-        uploadedUrls.push(data.publicUrl)
-      }
+      if (data?.publicUrl) uploadedUrls.push(data.publicUrl)
     }
 
     setReviewImages((prev) => [...prev, ...uploadedUrls])
@@ -164,14 +148,10 @@ export default function CafeDetailPage({
   const handleBoost = async () => {
     const newBoosts = boosts + 1
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("cafes")
       .update({ boosts: newBoosts })
       .eq("id", Number(id))
-      .select()
-
-    console.log("boost data:", data)
-    console.log("boost error:", error)
 
     if (error) {
       alert(error.message)
@@ -204,21 +184,15 @@ export default function CafeDetailPage({
       return
     }
 
-    console.log("reviewImages being saved:", reviewImages)
-
-    const payload = {
-      cafe_id: Number(id),
-      user_id: user.id,
-      rating: userRating,
-      content: newReview,
-      images: reviewImages,
-    }
-
-    console.log("review insert payload:", payload)
-
-    const { error } = await supabase.from("reviews").insert([payload])
-
-    console.log("review insert error:", error)
+    const { error } = await supabase.from("reviews").insert([
+      {
+        cafe_id: Number(id),
+        user_id: user.id,
+        rating: userRating,
+        content: newReview,
+        images: reviewImages,
+      },
+    ])
 
     if (error) {
       alert(error.message)
@@ -230,7 +204,6 @@ export default function CafeDetailPage({
     setUserRating(5)
     setReviewImages([])
     setPostingReview(false)
-
     await fetchReviews()
   }
 
@@ -239,7 +212,7 @@ export default function CafeDetailPage({
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="mx-auto max-w-6xl px-4 py-16 text-center">
-          <h1 className="mb-4 text-2xl font-bold text-foreground">Loading...</h1>
+          <h1 className="text-2xl font-bold">Loading...</h1>
         </div>
       </div>
     )
@@ -250,7 +223,7 @@ export default function CafeDetailPage({
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="mx-auto max-w-6xl px-4 py-16 text-center">
-          <h1 className="mb-4 text-2xl font-bold text-foreground">Cafe not found</h1>
+          <h1 className="mb-4 text-2xl font-bold">Cafe not found</h1>
           <Button asChild>
             <Link href="/explore">Back to Explore</Link>
           </Button>
@@ -278,7 +251,7 @@ export default function CafeDetailPage({
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <main className="mx-auto max-w-4xl px-4 py-8">
+      <main className="mx-auto max-w-5xl px-4 py-8">
         <Button variant="ghost" size="sm" asChild className="mb-6">
           <Link href="/explore" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
@@ -286,15 +259,36 @@ export default function CafeDetailPage({
           </Link>
         </Button>
 
-        <div className="mb-6">
-          <div className="relative mb-3 aspect-video overflow-hidden rounded-2xl">
+        <section className="mb-8">
+          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl bg-muted shadow-sm">
             <Image
               src={images[currentImage]}
               alt={`${cafe.name} image ${currentImage + 1}`}
               fill
-              className="object-contain"
+              className="object-cover object-center"
               unoptimized
             />
+
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/55 to-transparent" />
+
+            <div className="absolute bottom-5 left-5 right-5 text-white">
+              <h1 className="mb-2 text-3xl font-bold drop-shadow md:text-4xl">
+                {cafe.name}
+              </h1>
+
+              <div className="flex flex-wrap items-center gap-4 text-sm text-white/90">
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>{cafe.location}</span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <Star className="h-4 w-4 fill-white text-white" />
+                  <span>{avgRating.toFixed(1)}</span>
+                  <span>({reviewCount} reviews)</span>
+                </div>
+              </div>
+            </div>
 
             {images.length > 1 && (
               <>
@@ -313,31 +307,18 @@ export default function CafeDetailPage({
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
-
-                <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-                  {images.map((_: string, index: number) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => setCurrentImage(index)}
-                      className={`h-2.5 w-2.5 rounded-full ${
-                        index === currentImage ? "bg-white" : "bg-white/50"
-                      }`}
-                    />
-                  ))}
-                </div>
               </>
             )}
           </div>
 
           {images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
               {images.map((img: string, index: number) => (
                 <button
                   key={index}
                   type="button"
                   onClick={() => setCurrentImage(index)}
-                  className={`relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-lg border-2 ${
+                  className={`relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-xl border-2 ${
                     index === currentImage ? "border-primary" : "border-transparent"
                   }`}
                 >
@@ -352,95 +333,10 @@ export default function CafeDetailPage({
               ))}
             </div>
           )}
-        </div>
+        </section>
 
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="mb-2 text-3xl font-bold text-foreground">{cafe.name}</h1>
-            <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                <span className="text-sm">{cafe.location}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-primary text-primary" />
-                <span className="text-sm font-medium text-foreground">
-                  {avgRating.toFixed(1)}
-                </span>
-                <span className="text-sm">({reviewCount} reviews)</span>
-              </div>
-            </div>
-          </div>
-
-          <Button
-            size="lg"
-            variant={boosted ? "default" : "outline"}
-            className="gap-2"
-            onClick={handleBoost}
-          >
-            <Zap className={`h-5 w-5 ${boosted ? "fill-current" : ""}`} />
-            Boost ({boosts})
-          </Button>
-        </div>
-
-        <div className="mb-8 grid gap-4 sm:grid-cols-4">
-          <Card>
-            <CardContent className="flex items-center gap-3 p-4">
-              <Clock className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">Hours</p>
-                <p className="text-sm font-medium text-foreground">{cafe.hours}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="flex items-center gap-3 p-4">
-              <DollarSign className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">Price</p>
-                <p className="text-sm font-medium text-foreground">{cafe.price_range}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="flex items-center gap-3 p-4">
-              <Wifi
-                className={`h-5 w-5 ${
-                  cafe.wifi ? "text-primary" : "text-muted-foreground"
-                }`}
-              />
-              <div>
-                <p className="text-xs text-muted-foreground">WiFi</p>
-                <p className="text-sm font-medium text-foreground">
-                  {cafe.wifi ? "Available" : "No"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="flex items-center gap-3 p-4">
-              <Plug
-                className={`h-5 w-5 ${
-                  cafe.outlets ? "text-primary" : "text-muted-foreground"
-                }`}
-              />
-              <div>
-                <p className="text-xs text-muted-foreground">Outlets</p>
-                <p className="text-sm font-medium text-foreground">
-                  {cafe.outlets ? "Plenty" : "Limited"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="mb-8">
-          <h2 className="mb-3 text-lg font-semibold text-foreground">About</h2>
-          <p className="text-muted-foreground">{cafe.description}</p>
-          <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-2">
             {(cafe.tags ?? []).map((tag: string) => (
               <span
                 key={tag}
@@ -450,25 +346,94 @@ export default function CafeDetailPage({
               </span>
             ))}
           </div>
+
+          <Button
+            size="lg"
+            variant={boosted ? "default" : "outline"}
+            className="gap-2 rounded-full"
+            onClick={handleBoost}
+          >
+            <Zap className={`h-5 w-5 ${boosted ? "fill-current" : ""}`} />
+            Boost ({boosts})
+          </Button>
         </div>
 
-        <div>
-          <h2 className="mb-4 text-lg font-semibold text-foreground">Reviews</h2>
+        <div className="mb-8 grid gap-4 sm:grid-cols-4">
+          <Card className="rounded-2xl">
+            <CardContent className="flex items-center gap-3 p-4">
+              <Clock className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-xs text-muted-foreground">Hours</p>
+                <p className="text-sm font-medium">{cafe.hours || "Not listed"}</p>
+              </div>
+            </CardContent>
+          </Card>
 
-          <Card className="mb-6">
+          <Card className="rounded-2xl">
+            <CardContent className="flex items-center gap-3 p-4">
+              <DollarSign className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-xs text-muted-foreground">Price</p>
+                <p className="text-sm font-medium">
+                  {cafe.price_range || "Not listed"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-2xl">
+            <CardContent className="flex items-center gap-3 p-4">
+              <Wifi className={`h-5 w-5 ${cafe.wifi ? "text-primary" : "text-muted-foreground"}`} />
+              <div>
+                <p className="text-xs text-muted-foreground">WiFi</p>
+                <p className="text-sm font-medium">
+                  {cafe.wifi ? "Available" : "No"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-2xl">
+            <CardContent className="flex items-center gap-3 p-4">
+              <Plug className={`h-5 w-5 ${cafe.outlets ? "text-primary" : "text-muted-foreground"}`} />
+              <div>
+                <p className="text-xs text-muted-foreground">Outlets</p>
+                <p className="text-sm font-medium">
+                  {cafe.outlets ? "Plenty" : "Limited"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {cafe.description && (
+          <section className="mb-8">
+            <h2 className="mb-3 text-xl font-semibold">About</h2>
+            <p className="leading-relaxed text-muted-foreground">
+              {cafe.description}
+            </p>
+          </section>
+        )}
+
+        <section>
+          <h2 className="mb-4 text-xl font-semibold">Reviews</h2>
+
+          <Card className="mb-6 rounded-2xl">
             <CardContent className="p-4">
               <form onSubmit={handleSubmitReview}>
                 <div className="mb-3 flex items-center gap-1">
-                  <span className="mr-2 text-sm text-muted-foreground">Your rating:</span>
+                  <span className="mr-2 text-sm text-muted-foreground">
+                    Your rating:
+                  </span>
+
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
                       type="button"
                       onClick={() => setUserRating(star)}
-                      className="focus:outline-none"
                     >
                       <Star
-                        className={`h-5 w-5 transition-colors ${
+                        className={`h-5 w-5 ${
                           star <= userRating
                             ? "fill-primary text-primary"
                             : "text-muted-foreground"
@@ -511,6 +476,7 @@ export default function CafeDetailPage({
                           alt={`Review upload ${index + 1}`}
                           className="h-full w-full object-cover"
                         />
+
                         <button
                           type="button"
                           onClick={() => removeReviewImage(index)}
@@ -523,7 +489,11 @@ export default function CafeDetailPage({
                   </div>
                 )}
 
-                <Button type="submit" size="sm" disabled={postingReview || uploadingReviewImages}>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={postingReview || uploadingReviewImages}
+                >
                   {postingReview ? "Posting..." : "Post Review"}
                 </Button>
               </form>
@@ -532,12 +502,18 @@ export default function CafeDetailPage({
 
           <div className="space-y-4">
             {reviews.map((review) => (
-              <Card key={review.id}>
+              <Card key={review.id} className="rounded-2xl">
                 <CardContent className="p-4">
                   <div className="mb-2 flex items-center justify-between">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm">
-                      {review.profiles?.full_name?.[0] || "U"}
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                        {review.profiles?.full_name?.[0] || "U"}
+                      </div>
+                      <p className="text-sm font-medium">
+                        {review.profiles?.full_name || "User"}
+                      </p>
                     </div>
+
                     <div className="flex items-center gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
@@ -574,7 +550,7 @@ export default function CafeDetailPage({
               </Card>
             ))}
           </div>
-        </div>
+        </section>
       </main>
     </div>
   )
