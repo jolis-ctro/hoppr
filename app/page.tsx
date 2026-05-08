@@ -51,11 +51,11 @@ useEffect(() => {
 
     <div className="absolute bottom-[-20%] right-[-10%] h-[450px] w-[450px] animate-pulse rounded-full bg-emerald-300/10 blur-3xl" />
 
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.08),transparent_35%)]" />
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.18),transparent_40%)]" />
   </div>
 
   {/* grid background */}
-  <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
+  <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(34,197,94,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(34,197,94,0.08)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
   <div className="mx-auto max-w-6xl">
     <div className="mx-auto max-w-4xl text-center">
@@ -123,37 +123,91 @@ useEffect(() => {
       </section>
 
       {/* Features */}
-      <section className="px-4 py-16 md:py-24">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-12 text-center">
-            <h2 className="mb-3 text-2xl font-bold text-foreground md:text-3xl">How it works</h2>
-            <p className="text-muted-foreground">Simple, quick, and made for cafe lovers</p>
+     {/* Features */}
+<section className="relative overflow-hidden px-4 py-20 md:py-28">
+  <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.08),transparent_35%)]" />
+
+  <div className="mx-auto max-w-6xl">
+    <div className="mb-14 text-center">
+      <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+        <Sparkles className="h-4 w-4" />
+        How Hoppr works
+      </div>
+
+      <h2 className="mb-4 text-4xl font-black tracking-tight text-foreground md:text-5xl">
+        Discover cafes
+        <span className="text-primary"> differently</span>
+      </h2>
+
+      <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+        Built for cafe lovers who care about vibes, aesthetics, study spots,
+        and discovering hidden gems around Melbourne.
+      </p>
+    </div>
+
+    <div className="grid gap-6 md:grid-cols-3">
+      {/* card 1 */}
+      <div className="group relative overflow-hidden rounded-3xl border border-border/60 bg-background/80 p-8 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10">
+        <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-primary/10 blur-3xl transition-all duration-500 group-hover:bg-primary/20" />
+
+        <div className="relative z-10">
+          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+            <MapPin className="h-7 w-7" />
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="rounded-2xl border border-border bg-card p-6 text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <MapPin className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="mb-2 font-semibold text-foreground">Discover</h3>
-              <p className="text-sm text-muted-foreground">Browse through curated cafes with vibes that match yours</p>
-            </div>
-            <div className="rounded-2xl border border-border bg-card p-6 text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <Zap className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="mb-2 font-semibold text-foreground">Boost</h3>
-              <p className="text-sm text-muted-foreground">Show love to your favorites and help others find the best spots</p>
-            </div>
-            <div className="rounded-2xl border border-border bg-card p-6 text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <Sparkles className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="mb-2 font-semibold text-foreground">Random Pick</h3>
-              <p className="text-sm text-muted-foreground">{"Can't decide? Let our picker choose your next adventure"}</p>
-            </div>
-          </div>
+
+          <h3 className="mb-3 text-2xl font-bold text-foreground">
+            Discover
+          </h3>
+
+          <p className="leading-relaxed text-muted-foreground">
+            Explore aesthetic cafes, hidden gems, and trending spots curated
+            by the community.
+          </p>
         </div>
-      </section>
+      </div>
+
+      {/* card 2 */}
+      <div className="group relative overflow-hidden rounded-3xl border border-border/60 bg-background/80 p-8 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10">
+        <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-primary/10 blur-3xl transition-all duration-500 group-hover:bg-primary/20" />
+
+        <div className="relative z-10">
+          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+            <Zap className="h-7 w-7" />
+          </div>
+
+          <h3 className="mb-3 text-2xl font-bold text-foreground">
+            Boost
+          </h3>
+
+          <p className="leading-relaxed text-muted-foreground">
+            Push your favorite cafes higher and help others discover the best
+            places worth visiting.
+          </p>
+        </div>
+      </div>
+
+      {/* card 3 */}
+      <div className="group relative overflow-hidden rounded-3xl border border-border/60 bg-background/80 p-8 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10">
+        <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-primary/10 blur-3xl transition-all duration-500 group-hover:bg-primary/20" />
+
+        <div className="relative z-10">
+          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+            <Sparkles className="h-7 w-7" />
+          </div>
+
+          <h3 className="mb-3 text-2xl font-bold text-foreground">
+            Random Pick
+          </h3>
+
+          <p className="leading-relaxed text-muted-foreground">
+            Can’t decide where to go? Let Hoppr instantly choose your next cafe
+            adventure.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* Featured Cafes */}
       <section className="bg-muted/30 px-4 py-16 md:py-24">
