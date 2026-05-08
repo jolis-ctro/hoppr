@@ -8,7 +8,14 @@ import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/navbar"
 import { CafeCard } from "@/components/cafe-card"
 
-const filters = ["All", "WiFi", "Quiet", "Aesthetic", "Work-friendly", "Late night"]
+const filters = [
+  "All",
+  "WiFi",
+  "Quiet",
+  "Aesthetic",
+  "Work-friendly",
+  "Late night",
+]
 
 export default function ExplorePage() {
   const [cafes, setCafes] = useState<any[]>([])
@@ -41,12 +48,23 @@ export default function ExplorePage() {
 
     const filterMap: Record<string, (cafe: any) => boolean> = {
       WiFi: (c) => c.wifi,
-      Quiet: (c) => c.tags?.includes("quiet") || c.tags?.includes("minimalist"),
-      Aesthetic: (c) => c.tags?.includes("aesthetic") || c.tags?.includes("artsy"),
+
+      Quiet: (c) =>
+        c.tags?.includes("quiet") ||
+        c.tags?.includes("minimalist"),
+
+      Aesthetic: (c) =>
+        c.tags?.includes("aesthetic") ||
+        c.tags?.includes("artsy"),
+
       "Work-friendly": (c) => c.wifi && c.outlets,
+
       "Late night": (c) =>
         c.hours?.includes("pm") &&
-        (c.hours?.includes("10pm") || c.hours?.includes("2am")),
+        (c.hours?.includes("10pm") ||
+          c.hours?.includes("11pm") ||
+          c.hours?.includes("12am") ||
+          c.hours?.includes("2am")),
     }
 
     return matchesSearch && filterMap[activeFilter]?.(cafe)
@@ -56,20 +74,26 @@ export default function ExplorePage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold text-foreground">Explore Cafes</h1>
-          <p className="text-muted-foreground">Find your perfect cafe spot</p>
+      <main className="mx-auto max-w-7xl px-4 py-8">
+        <div className="mb-10">
+          <h1 className="mb-2 text-4xl font-bold tracking-tight text-foreground">
+            Explore Cafes
+          </h1>
+
+          <p className="text-muted-foreground">
+            Discover Melbourne’s best cafes, study spots, and hidden gems.
+          </p>
         </div>
 
-        <div className="mb-8 space-y-4">
+        <div className="mb-10 space-y-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
             <Input
-              placeholder="Search by name, location, or vibe..."
+              placeholder="Search cafes, locations, or vibes..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
+              className="h-12 rounded-2xl border-border/60 pl-11 text-base shadow-sm"
             />
           </div>
 
@@ -80,6 +104,7 @@ export default function ExplorePage() {
                 size="sm"
                 variant={activeFilter === filter ? "default" : "outline"}
                 onClick={() => setActiveFilter(filter)}
+                className="rounded-full"
               >
                 {filter}
               </Button>
@@ -88,14 +113,23 @@ export default function ExplorePage() {
         </div>
 
         {filteredCafes.length > 0 ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredCafes.map((cafe) => (
-              <CafeCard key={cafe.id} cafe={cafe} />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {filteredCafes.map((cafe) => (
+                <CafeCard key={cafe.id} cafe={cafe} />
+              ))}
+            </div>
+
+            <p className="mt-12 text-center text-xs text-muted-foreground">
+              Hoppr is not affiliated with or endorsed by listed venues.
+              Cafe names are shown for identification only.
+            </p>
+          </>
         ) : (
-          <div className="rounded-2xl border border-border bg-muted/30 py-16 text-center">
-            <p className="text-muted-foreground">No cafes found. Try a different search or filter.</p>
+          <div className="rounded-3xl border border-border bg-muted/20 py-20 text-center">
+            <p className="text-muted-foreground">
+              No cafes found. Try a different search or filter.
+            </p>
           </div>
         )}
       </main>

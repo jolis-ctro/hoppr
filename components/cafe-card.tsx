@@ -29,23 +29,48 @@ export function CafeCard({ cafe }: { cafe: any }) {
   }
 
   return (
-    <Link href={`/cafe/${cafe.id}`}>
-      <Card className="overflow-hidden transition hover:shadow-lg">
-          <div className="relative aspect-[16/10] w-full overflow-hidden">
+    <Link href={`/cafe/${cafe.id}`} className="block h-full">
+      <Card className="group h-full overflow-hidden rounded-3xl border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
           <Image
             src={images[currentIndex]}
             alt={cafe.name}
             fill
-            className="object-cover"
+            className="object-cover transition duration-500 group-hover:scale-105"
             unoptimized
           />
+
+          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+
+          <div className="absolute left-4 right-4 top-4 flex justify-between gap-2">
+            <div className="flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-black shadow-sm">
+              <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+              {cafe.rating ?? "0.0"}
+            </div>
+
+            <div className="flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground shadow-sm">
+              <Zap className="h-3.5 w-3.5" />
+              {cafe.boosts ?? 0}
+            </div>
+          </div>
+
+          <div className="absolute bottom-4 left-4 right-4 text-white">
+            <h3 className="line-clamp-1 text-2xl font-bold drop-shadow">
+              {cafe.name}
+            </h3>
+
+            <div className="mt-1 flex items-center gap-1 text-sm text-white/90">
+              <MapPin className="h-4 w-4 flex-shrink-0" />
+              <span className="line-clamp-1">{cafe.location}</span>
+            </div>
+          </div>
 
           {images.length > 1 && (
             <>
               <button
                 type="button"
                 onClick={prevImage}
-                className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white"
+                className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/45 p-1.5 text-white opacity-0 transition group-hover:opacity-100"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -53,64 +78,24 @@ export function CafeCard({ cafe }: { cafe: any }) {
               <button
                 type="button"
                 onClick={nextImage}
-                className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white"
+                className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/45 p-1.5 text-white opacity-0 transition group-hover:opacity-100"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
-
-              <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1">
-                {images.map((_: string, index: number) => (
-                  <div
-                    key={index}
-                    className={`h-2 w-2 rounded-full ${
-                      index === currentIndex ? "bg-white" : "bg-white/50"
-                    }`}
-                  />
-                ))}
-              </div>
             </>
           )}
         </div>
 
         <CardContent className="p-4">
-          <div className="mb-2 flex items-start justify-between gap-3">
-            <h3 className="line-clamp-1 text-lg font-semibold text-foreground">
-              {cafe.name}
-            </h3>
-
-            <div className="flex items-center gap-1 text-sm">
-              <Star className="h-4 w-4 fill-primary text-primary" />
-              <span>{cafe.rating ?? 0}</span>
-            </div>
-          </div>
-
-          <div className="mb-3 flex items-center gap-1 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4" />
-            <span className="line-clamp-1">{cafe.location}</span>
-          </div>
-
-          {cafe.description && (
-            <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
-              {cafe.description}
-            </p>
-          )}
-
-          <div className="flex items-center justify-between">
-            <div className="flex flex-wrap gap-2">
-              {cafe.tags?.slice(0, 2).map((tag: string) => (
-                <span
-                  key={tag}
-                  className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Zap className="h-4 w-4" />
-              <span>{cafe.boosts ?? 0}</span>
-            </div>
+          <div className="flex flex-wrap gap-2">
+            {cafe.tags?.slice(0, 3).map((tag: string) => (
+              <span
+                key={tag}
+                className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground"
+              >
+                {tag}
+              </span>
+            ))}
           </div>
         </CardContent>
       </Card>
