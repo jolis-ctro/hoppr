@@ -462,22 +462,36 @@ export default function CafeDetailPage({
               </div>
 
               {cafe.menu_url ? (
-                <div className="overflow-hidden rounded-3xl border border-border bg-muted/20">
-                  {cafe.menu_url.toLowerCase().includes(".pdf") ? (
-                    <iframe
-                      src={cafe.menu_url}
-                      className="h-[700px] w-full"
-                      title={`${cafe.name} menu`}
-                    />
-                  ) : (
-                    <img
-                      src={cafe.menu_url}
-                      alt={`${cafe.name} menu`}
-                      className="max-h-[900px] w-full object-contain"
-                    />
-                  )}
-                </div>
-              ) : (
+  <div className="rounded-3xl border border-border bg-muted/20 p-10">
+    <div className="flex flex-col items-center justify-center text-center">
+
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+        <Menu className="h-8 w-8 text-primary" />
+      </div>
+
+      <h3 className="mb-2 text-xl font-semibold">
+        Menu Available
+      </h3>
+
+      <p className="mb-6 max-w-md text-sm text-muted-foreground">
+        Open the cafe menu in a new tab.
+      </p>
+
+      <Button asChild className="rounded-2xl">
+        <a
+          href={cafe.menu_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="gap-2"
+        >
+          Open Full Menu
+          <ExternalLink className="h-4 w-4" />
+        </a>
+      </Button>
+
+    </div>
+  </div>
+) : (
                 <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-muted/20 px-6 py-20 text-center">
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
                     <Menu className="h-8 w-8 text-primary" />
