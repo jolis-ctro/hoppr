@@ -101,27 +101,34 @@ export default function AddCafePage() {
   }
 
   const uploadMenuFile = async (userId: string) => {
-    if (!menuFile) return { menuUrl: null, menuName: null }
-
-    const fileExt = menuFile.name.split(".").pop()
-    const fileName = `${userId}-${Date.now()}-menu.${fileExt}`
-    const filePath = `menus/${fileName}`
-
-    const { error } = await supabase.storage
-      .from("menu-files")
-      .upload(filePath, menuFile)
-
-    if (error) throw error
-
-    const { data } = supabase.storage
-      .from("menu-files")
-      .getPublicUrl(filePath)
-
+  if (!menuFile) {
     return {
-      menuUrl: data.publicUrl,
-      menuName: menuFile.name,
+      menuUrl: null,
+      menuName: null,
     }
   }
+
+  const fileExt = menuFile.name.split(".").pop()
+  const fileName = `${userId}-${Date.now()}-menu.${fileExt}`
+  const filePath = `menus/${fileName}`
+
+  const { error: uploadError } = await supabase.storage
+    .from("cafe-images")
+    .upload(filePath, menuFile)
+
+  if (uploadError) {
+    throw uploadError
+  }
+
+  const { data } = supabase.storage
+    .from("cafe-images")
+    .getPublicUrl(filePath)
+
+  return {
+    menuUrl: data.publicUrl,
+    menuName: menuFile.name,
+  }
+}
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
