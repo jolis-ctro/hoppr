@@ -19,7 +19,6 @@ import {
   Menu,
   ExternalLink,
 } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
@@ -69,7 +68,7 @@ export default function CafeDetailPage({
   const fetchCafe = async () => {
     const { data } = await supabase
       .from("cafes")
-      .select("*, menu_url, menu_name")
+      .select("*")
       .eq("id", Number(id))
       .single()
 
@@ -214,6 +213,9 @@ export default function CafeDetailPage({
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
+        <div className="mx-auto max-w-6xl px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold">Loading...</h1>
+        </div>
       </div>
     )
   }
@@ -222,6 +224,12 @@ export default function CafeDetailPage({
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
+        <div className="mx-auto max-w-6xl px-4 py-16 text-center">
+          <h1 className="mb-4 text-2xl font-bold">Cafe not found</h1>
+          <Button asChild>
+            <Link href="/explore">Back to Explore</Link>
+          </Button>
+        </div>
       </div>
     )
   }
@@ -246,7 +254,6 @@ export default function CafeDetailPage({
       <Navbar />
 
       <main className="mx-auto max-w-5xl px-4 py-8">
-
         <Button variant="ghost" size="sm" asChild className="mb-6">
           <Link href="/explore" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
@@ -254,34 +261,33 @@ export default function CafeDetailPage({
           </Link>
         </Button>
 
-        {/* HERO */}
         <section className="mb-8">
           <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl bg-muted shadow-sm">
-
             <Image
               src={images[currentImage]}
-              alt={`${cafe.name} image`}
+              alt={`${cafe.name} image ${currentImage + 1}`}
               fill
-              className="object-cover"
+              className="object-cover object-center"
               unoptimized
             />
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/55 to-transparent" />
 
             <div className="absolute bottom-5 left-5 right-5 text-white">
-              <h1 className="mb-2 text-4xl font-black tracking-tight">
+              <h1 className="mb-2 text-3xl font-bold drop-shadow md:text-4xl">
                 {cafe.name}
               </h1>
 
               <div className="flex flex-wrap items-center gap-4 text-sm text-white/90">
                 <div className="flex items-center gap-1">
                   <MapPin className="h-4 w-4" />
-                  {cafe.location}
+                  <span>{cafe.location}</span>
                 </div>
 
                 <div className="flex items-center gap-1">
                   <Star className="h-4 w-4 fill-white text-white" />
-                  {avgRating.toFixed(1)} ({reviewCount} reviews)
+                  <span>{avgRating.toFixed(1)}</span>
+                  <span>({reviewCount} reviews)</span>
                 </div>
               </div>
             </div>
@@ -289,31 +295,54 @@ export default function CafeDetailPage({
             {images.length > 1 && (
               <>
                 <button
+                  type="button"
                   onClick={prevImage}
-                  className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white backdrop-blur"
+                  className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
 
                 <button
+                  type="button"
                   onClick={nextImage}
-                  className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white backdrop-blur"
+                  className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
               </>
             )}
           </div>
+
+          {images.length > 1 && (
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              {images.map((img: string, index: number) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setCurrentImage(index)}
+                  className={`relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-xl border-2 ${
+                    index === currentImage ? "border-primary" : "border-transparent"
+                  }`}
+                >
+                  <Image
+                    src={img}
+                    alt={`${cafe.name} thumbnail ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </section>
 
-        {/* TAGS + BOOST */}
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-
           <div className="flex flex-wrap gap-2">
             {(cafe.tags ?? []).map((tag: string) => (
               <span
                 key={tag}
-                className="rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary"
+                className="rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
               >
                 {tag}
               </span>
@@ -331,32 +360,36 @@ export default function CafeDetailPage({
           </Button>
         </div>
 
-        {/* INFO CARDS */}
         <div className="mb-8 grid gap-4 sm:grid-cols-4">
-
-          <Card className="rounded-3xl">
-            <CardContent className="flex items-center gap-3 p-5">
+          <Card className="rounded-2xl">
+            <CardContent className="flex items-center gap-3 p-4">
               <Clock className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-xs text-muted-foreground">Hours</p>
-                <p className="text-sm font-medium">{cafe.hours}</p>
+                <p className="text-sm font-medium">{cafe.hours || "Not listed"}</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl">
-            <CardContent className="flex items-center gap-3 p-5">
+          <Card className="rounded-2xl">
+            <CardContent className="flex items-center gap-3 p-4">
               <DollarSign className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-xs text-muted-foreground">Price</p>
-                <p className="text-sm font-medium">{cafe.price_range}</p>
+                <p className="text-sm font-medium">
+                  {cafe.price_range || "Not listed"}
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl">
-            <CardContent className="flex items-center gap-3 p-5">
-              <Wifi className="h-5 w-5 text-primary" />
+          <Card className="rounded-2xl">
+            <CardContent className="flex items-center gap-3 p-4">
+              <Wifi
+                className={`h-5 w-5 ${
+                  cafe.wifi ? "text-primary" : "text-muted-foreground"
+                }`}
+              />
               <div>
                 <p className="text-xs text-muted-foreground">WiFi</p>
                 <p className="text-sm font-medium">
@@ -366,9 +399,13 @@ export default function CafeDetailPage({
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl">
-            <CardContent className="flex items-center gap-3 p-5">
-              <Plug className="h-5 w-5 text-primary" />
+          <Card className="rounded-2xl">
+            <CardContent className="flex items-center gap-3 p-4">
+              <Plug
+                className={`h-5 w-5 ${
+                  cafe.outlets ? "text-primary" : "text-muted-foreground"
+                }`}
+              />
               <div>
                 <p className="text-xs text-muted-foreground">Outlets</p>
                 <p className="text-sm font-medium">
@@ -379,49 +416,38 @@ export default function CafeDetailPage({
           </Card>
         </div>
 
-        {/* ABOUT */}
         {cafe.description && (
           <section className="mb-8">
-            <h2 className="mb-3 text-2xl font-bold">
-              About
-            </h2>
-
+            <h2 className="mb-3 text-xl font-semibold">About</h2>
             <p className="leading-relaxed text-muted-foreground">
               {cafe.description}
             </p>
           </section>
         )}
 
-        {/* MENU */}
         <section className="mb-10">
           <div className="relative overflow-hidden rounded-[2rem] border border-border/60 bg-background/80 p-6 shadow-sm backdrop-blur md:p-8">
-
             <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
 
             <div className="relative z-10">
-
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
                 <div>
                   <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
                     <Menu className="h-4 w-4" />
                     Cafe Menu
                   </div>
 
-                  <h2 className="text-3xl font-black tracking-tight">
+                  <h2 className="text-2xl font-bold tracking-tight">
                     Explore the menu
                   </h2>
 
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <p className="mt-2 max-w-xl text-sm text-muted-foreground">
                     Check drinks, desserts, pricing, and specials before visiting.
                   </p>
                 </div>
 
                 {cafe.menu_url && (
-                  <Button
-                    asChild
-                    className="rounded-2xl"
-                  >
+                  <Button asChild className="rounded-2xl">
                     <a
                       href={cafe.menu_url}
                       target="_blank"
@@ -437,23 +463,22 @@ export default function CafeDetailPage({
 
               {cafe.menu_url ? (
                 <div className="overflow-hidden rounded-3xl border border-border bg-muted/20">
-
                   {cafe.menu_url.toLowerCase().includes(".pdf") ? (
                     <iframe
                       src={cafe.menu_url}
                       className="h-[700px] w-full"
+                      title={`${cafe.name} menu`}
                     />
                   ) : (
                     <img
                       src={cafe.menu_url}
-                      alt="Cafe menu"
+                      alt={`${cafe.name} menu`}
                       className="max-h-[900px] w-full object-contain"
                     />
                   )}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-muted/20 px-6 py-20 text-center">
-
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
                     <Menu className="h-8 w-8 text-primary" />
                   </div>
@@ -462,8 +487,8 @@ export default function CafeDetailPage({
                     No menu uploaded yet
                   </h3>
 
-                  <p className="text-sm text-muted-foreground">
-                    This cafe hasn’t attached a menu yet.
+                  <p className="max-w-md text-sm text-muted-foreground">
+                    This cafe hasn’t attached their menu yet.
                   </p>
                 </div>
               )}
@@ -471,6 +496,142 @@ export default function CafeDetailPage({
           </div>
         </section>
 
+        <section>
+          <h2 className="mb-4 text-xl font-semibold">Reviews</h2>
+
+          <Card className="mb-6 rounded-2xl">
+            <CardContent className="p-4">
+              <form onSubmit={handleSubmitReview}>
+                <div className="mb-3 flex items-center gap-1">
+                  <span className="mr-2 text-sm text-muted-foreground">
+                    Your rating:
+                  </span>
+
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setUserRating(star)}
+                    >
+                      <Star
+                        className={`h-5 w-5 ${
+                          star <= userRating
+                            ? "fill-primary text-primary"
+                            : "text-muted-foreground"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+
+                <Textarea
+                  placeholder="Share your experience..."
+                  value={newReview}
+                  onChange={(e) => setNewReview(e.target.value)}
+                  className="mb-3"
+                />
+
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) => handleReviewImageUpload(e.target.files)}
+                  className="mb-3 block w-full text-sm"
+                />
+
+                {uploadingReviewImages && (
+                  <p className="mb-3 text-sm text-muted-foreground">
+                    Uploading images...
+                  </p>
+                )}
+
+                {reviewImages.length > 0 && (
+                  <div className="mb-3 flex gap-2 overflow-x-auto">
+                    {reviewImages.map((img, index) => (
+                      <div
+                        key={index}
+                        className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border"
+                      >
+                        <img
+                          src={img}
+                          alt={`Review upload ${index + 1}`}
+                          className="h-full w-full object-cover"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => removeReviewImage(index)}
+                          className="absolute right-1 top-1 rounded-full bg-black/60 p-1 text-white"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={postingReview || uploadingReviewImages}
+                >
+                  {postingReview ? "Posting..." : "Post Review"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <div className="space-y-4">
+            {reviews.map((review) => (
+              <Card key={review.id} className="rounded-2xl">
+                <CardContent className="p-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                        {review.profiles?.full_name?.[0] || "U"}
+                      </div>
+                      <p className="text-sm font-medium">
+                        {review.profiles?.full_name || "User"}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < review.rating
+                              ? "fill-primary text-primary"
+                              : "text-muted-foreground"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground">{review.content}</p>
+
+                  {Array.isArray(review.images) && review.images.length > 0 && (
+                    <div className="mt-3 flex gap-2 overflow-x-auto">
+                      {review.images.map((img: string, index: number) => (
+                        <div
+                          key={index}
+                          className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg"
+                        >
+                          <img
+                            src={img}
+                            alt={`Review image ${index + 1}`}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
       </main>
     </div>
   )
