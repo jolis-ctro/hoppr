@@ -3,12 +3,18 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Coffee, ImagePlus } from "lucide-react"
+import { ArrowLeft, Coffee, ImagePlus, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { supabase } from "@/lib/supabase"
 
@@ -27,6 +33,7 @@ export default function AddCafePage() {
   })
 
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [menuFile, setMenuFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
@@ -73,6 +80,49 @@ export default function AddCafePage() {
     }
   }, [router])
 
+  const uploadCafeImage = async (userId: string) => {
+    if (!imageFile) return null
+
+    const fileExt = imageFile.name.split(".").pop()
+    const fileName = `${userId}-${Date.now()}.${fileExt}`
+    const filePath = `cafes/${fileName}`
+
+    const { error } = await supabase.storage
+      .from("cafe-images")
+      .upload(filePath, imageFile)
+
+    if (error) throw error
+
+    const { data } = supabase.storage
+      .from("cafe-images")
+      .getPublicUrl(filePath)
+
+    return data.publicUrl
+  }
+
+  const uploadMenuFile = async (userId: string) => {
+    if (!menuFile) return { menuUrl: null, menuName: null }
+
+    const fileExt = menuFile.name.split(".").pop()
+    const fileName = `${userId}-${Date.now()}-menu.${fileExt}`
+    const filePath = `menus/${fileName}`
+
+    const { error } = await supabase.storage
+      .from("menu-files")
+      .upload(filePath, menuFile)
+
+    if (error) throw error
+
+    const { data } = supabase.storage
+      .from("menu-files")
+      .getPublicUrl(filePath)
+
+    return {
+      menuUrl: data.publicUrl,
+      menuName: menuFile.name,
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
@@ -92,55 +142,41 @@ export default function AddCafePage() {
 
     setUploading(true)
 
-    const fileExt = imageFile.name.split(".").pop()
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`
-    const filePath = `cafes/${fileName}`
+    try {
+      const imageUrl = await uploadCafeImage(user.id)
+      const { menuUrl, menuName } = await uploadMenuFile(user.id)
 
-    const { error: uploadError } = await supabase.storage
-      .from("cafe-images")
-      .upload(filePath, imageFile)
+      const tagsArray = formData.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean)
 
-    if (uploadError) {
-      setUploading(false)
-      alert(uploadError.message)
-      return
-    }
+      const { error } = await supabase.from("cafes").insert([
+        {
+          name: formData.name,
+          description: formData.description,
+          location: formData.location,
+          hours: formData.hours,
+          price_range: formData.price_range,
+          wifi: formData.wifi,
+          outlets: formData.outlets,
+          tags: tagsArray,
+          image: imageUrl,
+          menu_url: menuUrl,
+          menu_name: menuName,
+          owner_id: user.id,
+        },
+      ])
 
-    const { data: publicUrlData } = supabase.storage
-      .from("cafe-images")
-      .getPublicUrl(filePath)
+      if (error) throw error
 
-    const imageUrl = publicUrlData.publicUrl
-
-    const tagsArray = formData.tags
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean)
-
-    const { error } = await supabase.from("cafes").insert([
-      {
-        name: formData.name,
-        description: formData.description,
-        location: formData.location,
-        hours: formData.hours,
-        price_range: formData.price_range,
-        wifi: formData.wifi,
-        outlets: formData.outlets,
-        tags: tagsArray,
-        image: imageUrl,
-        owner_id: user.id,
-      },
-    ])
-
-    setUploading(false)
-
-    if (error) {
+      alert("Cafe added ✅")
+      router.push("/owner/dashboard")
+    } catch (error: any) {
       alert(error.message)
-      return
+    } finally {
+      setUploading(false)
     }
-
-    alert("Cafe added ✅")
-    router.push("/owner/dashboard")
   }
 
   return (
@@ -168,7 +204,9 @@ export default function AddCafePage() {
         <Card>
           <CardHeader>
             <CardTitle>Add New Cafe</CardTitle>
-            <CardDescription>Fill in the details to list your cafe on hoppr</CardDescription>
+            <CardDescription>
+              Fill in the details to list your cafe on hoppr
+            </CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -200,6 +238,35 @@ export default function AddCafePage() {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="menu-file">Menu Upload</Label>
+
+                <label
+                  htmlFor="menu-file"
+                  className="flex h-32 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/30 transition-colors hover:border-primary/50"
+                >
+                  <div className="text-center">
+                    <Menu className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      {menuFile
+                        ? menuFile.name
+                        : "Click to upload menu image or PDF"}
+                    </p>
+                  </div>
+                </label>
+
+                <input
+                  id="menu-file"
+                  type="file"
+                  accept="image/*,.pdf"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null
+                    setMenuFile(file)
+                  }}
+                />
+              </div>
+
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Cafe Name *</Label>
@@ -207,7 +274,9 @@ export default function AddCafePage() {
                     id="name"
                     placeholder="Your cafe name"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -218,7 +287,9 @@ export default function AddCafePage() {
                     id="description"
                     placeholder="Tell people about your cafe..."
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -229,7 +300,9 @@ export default function AddCafePage() {
                     id="location"
                     placeholder="Neighborhood or address"
                     value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -241,7 +314,9 @@ export default function AddCafePage() {
                       id="hours"
                       placeholder="e.g. 7am - 9pm"
                       value={formData.hours}
-                      onChange={(e) => setFormData({ ...formData, hours: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, hours: e.target.value })
+                      }
                     />
                   </div>
 
@@ -250,7 +325,12 @@ export default function AddCafePage() {
                     <select
                       id="price_range"
                       value={formData.price_range}
-                      onChange={(e) => setFormData({ ...formData, price_range: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          price_range: e.target.value,
+                        })
+                      }
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       <option value="$">$ - Budget friendly</option>
@@ -266,7 +346,9 @@ export default function AddCafePage() {
                     id="tags"
                     placeholder="e.g. matcha, aesthetic, wifi"
                     value={formData.tags}
-                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, tags: e.target.value })
+                    }
                   />
                 </div>
               </div>
@@ -292,7 +374,10 @@ export default function AddCafePage() {
                       id="outlets"
                       checked={formData.outlets}
                       onCheckedChange={(checked) =>
-                        setFormData({ ...formData, outlets: checked as boolean })
+                        setFormData({
+                          ...formData,
+                          outlets: checked as boolean,
+                        })
                       }
                     />
                     <Label htmlFor="outlets" className="font-normal">
